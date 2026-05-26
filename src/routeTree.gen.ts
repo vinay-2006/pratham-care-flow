@@ -9,38 +9,165 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppReviewRouteImport } from './routes/_app.review'
+import { Route as AppInvestigationsRouteImport } from './routes/_app.investigations'
+import { Route as AppIntakeRouteImport } from './routes/_app.intake'
+import { Route as AppImagingRouteImport } from './routes/_app.imaging'
+import { Route as AppExplainabilityRouteImport } from './routes/_app.explainability'
+import { Route as AppEvidenceRouteImport } from './routes/_app.evidence'
+import { Route as AppDifferentialRouteImport } from './routes/_app.differential'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppConfidenceRouteImport } from './routes/_app.confidence'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppReviewRoute = AppReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInvestigationsRoute = AppInvestigationsRouteImport.update({
+  id: '/investigations',
+  path: '/investigations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntakeRoute = AppIntakeRouteImport.update({
+  id: '/intake',
+  path: '/intake',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppImagingRoute = AppImagingRouteImport.update({
+  id: '/imaging',
+  path: '/imaging',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExplainabilityRoute = AppExplainabilityRouteImport.update({
+  id: '/explainability',
+  path: '/explainability',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEvidenceRoute = AppEvidenceRouteImport.update({
+  id: '/evidence',
+  path: '/evidence',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDifferentialRoute = AppDifferentialRouteImport.update({
+  id: '/differential',
+  path: '/differential',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConfidenceRoute = AppConfidenceRouteImport.update({
+  id: '/confidence',
+  path: '/confidence',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/confidence': typeof AppConfidenceRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/differential': typeof AppDifferentialRoute
+  '/evidence': typeof AppEvidenceRoute
+  '/explainability': typeof AppExplainabilityRoute
+  '/imaging': typeof AppImagingRoute
+  '/intake': typeof AppIntakeRoute
+  '/investigations': typeof AppInvestigationsRoute
+  '/review': typeof AppReviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/confidence': typeof AppConfidenceRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/differential': typeof AppDifferentialRoute
+  '/evidence': typeof AppEvidenceRoute
+  '/explainability': typeof AppExplainabilityRoute
+  '/imaging': typeof AppImagingRoute
+  '/intake': typeof AppIntakeRoute
+  '/investigations': typeof AppInvestigationsRoute
+  '/review': typeof AppReviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/confidence': typeof AppConfidenceRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/differential': typeof AppDifferentialRoute
+  '/_app/evidence': typeof AppEvidenceRoute
+  '/_app/explainability': typeof AppExplainabilityRoute
+  '/_app/imaging': typeof AppImagingRoute
+  '/_app/intake': typeof AppIntakeRoute
+  '/_app/investigations': typeof AppInvestigationsRoute
+  '/_app/review': typeof AppReviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/confidence'
+    | '/dashboard'
+    | '/differential'
+    | '/evidence'
+    | '/explainability'
+    | '/imaging'
+    | '/intake'
+    | '/investigations'
+    | '/review'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/confidence'
+    | '/dashboard'
+    | '/differential'
+    | '/evidence'
+    | '/explainability'
+    | '/imaging'
+    | '/intake'
+    | '/investigations'
+    | '/review'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/confidence'
+    | '/_app/dashboard'
+    | '/_app/differential'
+    | '/_app/evidence'
+    | '/_app/explainability'
+    | '/_app/imaging'
+    | '/_app/intake'
+    | '/_app/investigations'
+    | '/_app/review'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +175,112 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/review': {
+      id: '/_app/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AppReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/investigations': {
+      id: '/_app/investigations'
+      path: '/investigations'
+      fullPath: '/investigations'
+      preLoaderRoute: typeof AppInvestigationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/intake': {
+      id: '/_app/intake'
+      path: '/intake'
+      fullPath: '/intake'
+      preLoaderRoute: typeof AppIntakeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/imaging': {
+      id: '/_app/imaging'
+      path: '/imaging'
+      fullPath: '/imaging'
+      preLoaderRoute: typeof AppImagingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/explainability': {
+      id: '/_app/explainability'
+      path: '/explainability'
+      fullPath: '/explainability'
+      preLoaderRoute: typeof AppExplainabilityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/evidence': {
+      id: '/_app/evidence'
+      path: '/evidence'
+      fullPath: '/evidence'
+      preLoaderRoute: typeof AppEvidenceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/differential': {
+      id: '/_app/differential'
+      path: '/differential'
+      fullPath: '/differential'
+      preLoaderRoute: typeof AppDifferentialRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/confidence': {
+      id: '/_app/confidence'
+      path: '/confidence'
+      fullPath: '/confidence'
+      preLoaderRoute: typeof AppConfidenceRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppConfidenceRoute: typeof AppConfidenceRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppDifferentialRoute: typeof AppDifferentialRoute
+  AppEvidenceRoute: typeof AppEvidenceRoute
+  AppExplainabilityRoute: typeof AppExplainabilityRoute
+  AppImagingRoute: typeof AppImagingRoute
+  AppIntakeRoute: typeof AppIntakeRoute
+  AppInvestigationsRoute: typeof AppInvestigationsRoute
+  AppReviewRoute: typeof AppReviewRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppConfidenceRoute: AppConfidenceRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppDifferentialRoute: AppDifferentialRoute,
+  AppEvidenceRoute: AppEvidenceRoute,
+  AppExplainabilityRoute: AppExplainabilityRoute,
+  AppImagingRoute: AppImagingRoute,
+  AppIntakeRoute: AppIntakeRoute,
+  AppInvestigationsRoute: AppInvestigationsRoute,
+  AppReviewRoute: AppReviewRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
