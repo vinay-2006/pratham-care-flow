@@ -1,5 +1,6 @@
-import { Moon, Sun, UserRound } from "lucide-react";
-import { useCase } from "@/lib/case-store";
+import { Bell, Moon, Siren, Sun, UserRound } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useCase, type Role } from "@/lib/case-store";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -11,16 +12,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export function TopBar() {
-  const { caseKey, setCaseKey, patientCase, theme, toggleTheme } = useCase();
+  const {
+    caseKey,
+    setCaseKey,
+    patientCase,
+    theme,
+    toggleTheme,
+    role,
+    setRole,
+    pendingCount,
+    activeEmergencyCount,
+  } = useCase();
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b bg-background/85 px-3 backdrop-blur md:px-5">
       <SidebarTrigger />
       <Separator orientation="vertical" className="h-6" />
 
-      <div className="hidden items-center gap-2 sm:flex">
+      <RoleSwitcher role={role} onChange={setRole} />
+
+      <Separator orientation="vertical" className="hidden h-6 md:block" />
+
+      <div className="hidden items-center gap-2 md:flex">
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted">
           <UserRound className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
@@ -35,15 +51,28 @@ export function TopBar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <Counter
+          icon={Siren}
+          label="Active"
+          value={activeEmergencyCount}
+          tone="high"
+        />
+        <Link
+          to={role === "doctor" ? "/doctor/approvals" : "/nurse/dashboard"}
+          className="hidden sm:block"
+        >
+          <Counter icon={Bell} label="Pending" value={pendingCount} tone="primary" />
+        </Link>
+
         <EvidenceCompletenessPill level={patientCase.evidenceCompleteness} />
 
         <Select value={caseKey} onValueChange={(v) => setCaseKey(v as "primary" | "low")}>
-          <SelectTrigger className="h-8 w-[160px] text-xs">
+          <SelectTrigger className="hidden h-8 w-[150px] text-xs lg:flex">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="primary">Demo: Primary case</SelectItem>
-            <SelectItem value="low">Demo: Low-evidence case</SelectItem>
+            <SelectItem value="primary">Demo: Primary</SelectItem>
+            <SelectItem value="low">Demo: Low evidence</SelectItem>
           </SelectContent>
         </Select>
 
@@ -58,5 +87,56 @@ export function TopBar() {
         </Button>
       </div>
     </header>
+  );
+}
+
+function RoleSwitcher({ role, onChange }: { role: Role; onChange: (r: Role) => void }) {
+  return (
+    <div className="inline-flex items-center rounded-md border bg-card p-0.5 text-xs">
+      {(["nurse", "doctor"] as const).map((r) => (
+        <button
+          key={r}
+          onClick={() => onChange(r)}
+          className={cn(
+            "rounded-[5px] px-2.5 py-1 font-medium capitalize transition-colors",
+            role === r
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {r}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Counter({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: typeof Bell;
+  label: string;
+  value: number;
+  tone: "primary" | "high";
+}) {
+  const toneCls =
+    tone === "high"
+      ? "text-[var(--color-severity-high)] bg-[var(--color-severity-high-soft)] border-[var(--color-severity-high)]/30"
+      : "text-primary bg-primary/10 border-primary/30";
+  return (
+    <div
+      className={cn(
+        "hidden items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium md:inline-flex",
+        toneCls,
+      )}
+      title={`${label}: ${value}`}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      <span className="uppercase tracking-wider">{label}</span>
+      <span className="tabular-nums font-semibold">{value}</span>
+    </div>
   );
 }
