@@ -20,6 +20,12 @@ import { Route as AppEvidenceRouteImport } from './routes/_app.evidence'
 import { Route as AppDifferentialRouteImport } from './routes/_app.differential'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppConfidenceRouteImport } from './routes/_app.confidence'
+import { Route as AppNurseQueueRouteImport } from './routes/_app.nurse.queue'
+import { Route as AppNurseIntakeRouteImport } from './routes/_app.nurse.intake'
+import { Route as AppNurseDashboardRouteImport } from './routes/_app.nurse.dashboard'
+import { Route as AppDoctorReviewRouteImport } from './routes/_app.doctor.review'
+import { Route as AppDoctorDashboardRouteImport } from './routes/_app.doctor.dashboard'
+import { Route as AppDoctorApprovalsRouteImport } from './routes/_app.doctor.approvals'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -75,6 +81,36 @@ const AppConfidenceRoute = AppConfidenceRouteImport.update({
   path: '/confidence',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNurseQueueRoute = AppNurseQueueRouteImport.update({
+  id: '/nurse/queue',
+  path: '/nurse/queue',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNurseIntakeRoute = AppNurseIntakeRouteImport.update({
+  id: '/nurse/intake',
+  path: '/nurse/intake',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNurseDashboardRoute = AppNurseDashboardRouteImport.update({
+  id: '/nurse/dashboard',
+  path: '/nurse/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDoctorReviewRoute = AppDoctorReviewRouteImport.update({
+  id: '/doctor/review',
+  path: '/doctor/review',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDoctorDashboardRoute = AppDoctorDashboardRouteImport.update({
+  id: '/doctor/dashboard',
+  path: '/doctor/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDoctorApprovalsRoute = AppDoctorApprovalsRouteImport.update({
+  id: '/doctor/approvals',
+  path: '/doctor/approvals',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +123,12 @@ export interface FileRoutesByFullPath {
   '/intake': typeof AppIntakeRoute
   '/investigations': typeof AppInvestigationsRoute
   '/review': typeof AppReviewRoute
+  '/doctor/approvals': typeof AppDoctorApprovalsRoute
+  '/doctor/dashboard': typeof AppDoctorDashboardRoute
+  '/doctor/review': typeof AppDoctorReviewRoute
+  '/nurse/dashboard': typeof AppNurseDashboardRoute
+  '/nurse/intake': typeof AppNurseIntakeRoute
+  '/nurse/queue': typeof AppNurseQueueRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,6 +141,12 @@ export interface FileRoutesByTo {
   '/intake': typeof AppIntakeRoute
   '/investigations': typeof AppInvestigationsRoute
   '/review': typeof AppReviewRoute
+  '/doctor/approvals': typeof AppDoctorApprovalsRoute
+  '/doctor/dashboard': typeof AppDoctorDashboardRoute
+  '/doctor/review': typeof AppDoctorReviewRoute
+  '/nurse/dashboard': typeof AppNurseDashboardRoute
+  '/nurse/intake': typeof AppNurseIntakeRoute
+  '/nurse/queue': typeof AppNurseQueueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +161,12 @@ export interface FileRoutesById {
   '/_app/intake': typeof AppIntakeRoute
   '/_app/investigations': typeof AppInvestigationsRoute
   '/_app/review': typeof AppReviewRoute
+  '/_app/doctor/approvals': typeof AppDoctorApprovalsRoute
+  '/_app/doctor/dashboard': typeof AppDoctorDashboardRoute
+  '/_app/doctor/review': typeof AppDoctorReviewRoute
+  '/_app/nurse/dashboard': typeof AppNurseDashboardRoute
+  '/_app/nurse/intake': typeof AppNurseIntakeRoute
+  '/_app/nurse/queue': typeof AppNurseQueueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +181,12 @@ export interface FileRouteTypes {
     | '/intake'
     | '/investigations'
     | '/review'
+    | '/doctor/approvals'
+    | '/doctor/dashboard'
+    | '/doctor/review'
+    | '/nurse/dashboard'
+    | '/nurse/intake'
+    | '/nurse/queue'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +199,12 @@ export interface FileRouteTypes {
     | '/intake'
     | '/investigations'
     | '/review'
+    | '/doctor/approvals'
+    | '/doctor/dashboard'
+    | '/doctor/review'
+    | '/nurse/dashboard'
+    | '/nurse/intake'
+    | '/nurse/queue'
   id:
     | '__root__'
     | '/'
@@ -152,6 +218,12 @@ export interface FileRouteTypes {
     | '/_app/intake'
     | '/_app/investigations'
     | '/_app/review'
+    | '/_app/doctor/approvals'
+    | '/_app/doctor/dashboard'
+    | '/_app/doctor/review'
+    | '/_app/nurse/dashboard'
+    | '/_app/nurse/intake'
+    | '/_app/nurse/queue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -238,6 +310,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfidenceRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/nurse/queue': {
+      id: '/_app/nurse/queue'
+      path: '/nurse/queue'
+      fullPath: '/nurse/queue'
+      preLoaderRoute: typeof AppNurseQueueRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/nurse/intake': {
+      id: '/_app/nurse/intake'
+      path: '/nurse/intake'
+      fullPath: '/nurse/intake'
+      preLoaderRoute: typeof AppNurseIntakeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/nurse/dashboard': {
+      id: '/_app/nurse/dashboard'
+      path: '/nurse/dashboard'
+      fullPath: '/nurse/dashboard'
+      preLoaderRoute: typeof AppNurseDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/doctor/review': {
+      id: '/_app/doctor/review'
+      path: '/doctor/review'
+      fullPath: '/doctor/review'
+      preLoaderRoute: typeof AppDoctorReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/doctor/dashboard': {
+      id: '/_app/doctor/dashboard'
+      path: '/doctor/dashboard'
+      fullPath: '/doctor/dashboard'
+      preLoaderRoute: typeof AppDoctorDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/doctor/approvals': {
+      id: '/_app/doctor/approvals'
+      path: '/doctor/approvals'
+      fullPath: '/doctor/approvals'
+      preLoaderRoute: typeof AppDoctorApprovalsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -251,6 +365,12 @@ interface AppRouteChildren {
   AppIntakeRoute: typeof AppIntakeRoute
   AppInvestigationsRoute: typeof AppInvestigationsRoute
   AppReviewRoute: typeof AppReviewRoute
+  AppDoctorApprovalsRoute: typeof AppDoctorApprovalsRoute
+  AppDoctorDashboardRoute: typeof AppDoctorDashboardRoute
+  AppDoctorReviewRoute: typeof AppDoctorReviewRoute
+  AppNurseDashboardRoute: typeof AppNurseDashboardRoute
+  AppNurseIntakeRoute: typeof AppNurseIntakeRoute
+  AppNurseQueueRoute: typeof AppNurseQueueRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -263,6 +383,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppIntakeRoute: AppIntakeRoute,
   AppInvestigationsRoute: AppInvestigationsRoute,
   AppReviewRoute: AppReviewRoute,
+  AppDoctorApprovalsRoute: AppDoctorApprovalsRoute,
+  AppDoctorDashboardRoute: AppDoctorDashboardRoute,
+  AppDoctorReviewRoute: AppDoctorReviewRoute,
+  AppNurseDashboardRoute: AppNurseDashboardRoute,
+  AppNurseIntakeRoute: AppNurseIntakeRoute,
+  AppNurseQueueRoute: AppNurseQueueRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

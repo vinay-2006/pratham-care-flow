@@ -67,11 +67,11 @@ function Header() {
         </nav>
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="sm">
-            <Link to="/intake">Try intake</Link>
+            <Link to="/nurse/dashboard">Nurse view</Link>
           </Button>
           <Button asChild size="sm">
-            <Link to="/dashboard">
-              View demo <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            <Link to="/doctor/dashboard">
+              Doctor view <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Link>
           </Button>
         </div>
@@ -102,12 +102,12 @@ function Hero() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link to="/dashboard">
-                View demo dashboard <ArrowRight className="ml-1.5 h-4 w-4" />
+              <Link to="/nurse/dashboard">
+                Open nurse view <ArrowRight className="ml-1.5 h-4 w-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/intake">Try intake flow</Link>
+              <Link to="/doctor/dashboard">Open doctor view</Link>
             </Button>
           </div>
           <dl className="mt-10 grid grid-cols-3 gap-6 border-t pt-6 text-sm">
