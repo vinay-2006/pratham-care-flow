@@ -2,11 +2,9 @@ import { UserRound } from "lucide-react";
 import { SeverityBadge } from "@/components/severity-badge";
 import { PatientStatusChip } from "@/components/status-pipeline";
 import { Button } from "@/components/ui/button";
-import { useCase } from "@/lib/case-store";
 import type { QueuePatient } from "@/lib/mock-data";
 
 export function PatientQueueRow({ p }: { p: QueuePatient }) {
-  const { setCaseKey } = useCase();
   return (
     <li className="flex flex-wrap items-center gap-3 px-4 py-3 md:flex-nowrap">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
@@ -26,10 +24,11 @@ export function PatientQueueRow({ p }: { p: QueuePatient }) {
         size="sm"
         variant="outline"
         className="ml-auto"
-        onClick={() => p.caseKey && setCaseKey(p.caseKey)}
+        disabled
       >
         Open
       </Button>
     </li>
   );
 }
+

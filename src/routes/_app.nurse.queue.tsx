@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { SectionHeader } from "@/components/section-header";
-import { PatientQueueRow } from "@/components/patient-queue-row";
 import { Card, CardContent } from "@/components/ui/card";
-import { patientQueue, type PatientStatus } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import type { PatientStatus } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/_app/nurse/queue")({
   head: () => ({
@@ -32,26 +33,31 @@ function NurseQueue() {
       />
 
       <div className="mt-8 space-y-6">
-        {GROUPS.map((g) => {
-          const items = patientQueue.filter((p) => p.status === g);
-          if (!items.length) return null;
-          return (
-            <section key={g}>
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {g} · {items.length}
-              </h2>
-              <Card>
-                <CardContent className="p-0">
-                  <ul className="divide-y">
-                    {items.map((p) => (
-                      <PatientQueueRow key={p.id} p={p} />
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </section>
-          );
-        })}
+        {GROUPS.map((g) => (
+          <section key={g}>
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              {g} · 0
+            </h2>
+            <Card>
+              <CardContent className="p-6 text-center text-sm text-muted-foreground">
+                No patients
+              </CardContent>
+            </Card>
+          </section>
+        ))}
+
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              Queue empty — submit a new intake to begin
+            </p>
+            <Button asChild size="sm" variant="outline" className="mt-4">
+              <Link to="/nurse/intake">
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> New intake
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

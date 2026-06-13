@@ -41,7 +41,7 @@ function DoctorDashboard() {
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         <Tile label="Pending approvals" value={pendingCount} accent="primary" />
         <Tile label="Active emergencies" value={activeEmergencyCount} accent="high" />
-        <Tile label="Current case" value={patientCase.priorityLabel} accent="moderate" />
+        <Tile label="Current case" value={patientCase?.priorityLabel ?? "—"} accent="moderate" />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -99,7 +99,7 @@ function DoctorDashboard() {
               <CardTitle className="text-sm font-semibold">Current patient · operational risk</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-2">
-              {patientCase.operationalRiskEstimates.slice(0, 4).map((r) => (
+              {(patientCase?.operationalRiskEstimates ?? []).slice(0, 4).map((r) => (
                 <RiskCard key={r.label} risk={r} />
               ))}
             </CardContent>

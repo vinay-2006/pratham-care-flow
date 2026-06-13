@@ -21,6 +21,17 @@ export const Route = createFileRoute("/_app/doctor/review")({
 
 function ReviewPage() {
   const { patientCase } = useCase();
+
+  if (!patientCase) {
+    return (
+      <div className="mx-auto max-w-5xl px-5 py-8 md:px-8">
+        <div className="rounded-lg border bg-muted/30 p-12 text-center">
+          <p className="text-sm text-muted-foreground">No patient selected. Submit a new intake to begin.</p>
+        </div>
+      </div>
+    );
+  }
+
   const v = patientCase.vitals;
 
   return (
@@ -51,11 +62,11 @@ function ReviewPage() {
               </TabsList>
 
               <TabsContent value="vitals" className="mt-4 grid gap-3 sm:grid-cols-2">
-                <Stat l="Heart rate" v={`${v.heartRate} bpm`} />
-                <Stat l="SpO₂" v={`${v.spo2}%`} />
-                <Stat l="Blood pressure" v={v.bloodPressure} />
-                <Stat l="Respiratory rate" v={String(v.respiratoryRate)} />
-                <Stat l="Temperature" v={`${v.temperature}°C`} />
+                <Stat l="Heart rate" v={v.heartRate ? `${v.heartRate} bpm` : "—"} />
+                <Stat l="SpO₂" v={v.spo2 ? `${v.spo2}%` : "—"} />
+                <Stat l="Blood pressure" v={v.bloodPressure || "—"} />
+                <Stat l="Respiratory rate" v={v.respiratoryRate ? String(v.respiratoryRate) : "—"} />
+                <Stat l="Temperature" v={v.temperature ? `${v.temperature}°C` : "—"} />
               </TabsContent>
 
               <TabsContent value="labs" className="mt-4">

@@ -18,6 +18,16 @@ export const Route = createFileRoute("/_app/differential")({
 function DifferentialPage() {
   const { patientCase } = useCase();
 
+  if (!patientCase) {
+    return (
+      <div className="mx-auto max-w-5xl px-5 py-8 md:px-8">
+        <div className="rounded-lg border bg-muted/30 p-12 text-center">
+          <p className="text-sm text-muted-foreground">No patient selected. Submit a new intake to begin.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-5 py-8 md:px-8">
       <SectionHeader

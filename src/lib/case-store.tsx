@@ -1,19 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import {
-  cases,
-  defaultCaseKey,
-  initialNotifications,
   type DoctorNotification,
   type PatientCase,
 } from "./mock-data";
 
-type CaseKey = keyof typeof cases;
+const API_BASE = "http://localhost:8000/api";
+
 export type Role = "nurse" | "doctor";
 
 interface CaseContextValue {
-  caseKey: CaseKey;
-  setCaseKey: (k: CaseKey) => void;
-  patientCase: PatientCase;
+  patientCase: PatientCase | null;
   theme: "light" | "dark";
   toggleTheme: () => void;
 
@@ -21,10 +18,14 @@ interface CaseContextValue {
   setRole: (r: Role) => void;
 
   notifications: DoctorNotification[];
+  isLoadingNotifications: boolean;
   approveNotification: (id: string) => void;
   rejectNotification: (id: string) => void;
   requestInfoNotification: (id: string) => void;
   pushNotification: (n: Omit<DoctorNotification, "id" | "timestamp" | "status">) => void;
+  refreshNotifications: () => void;
+  loadIntake: (intakeId: string) => Promise<void>;
+  clearPatient: () => void;
 
   pendingCount: number;
   activeEmergencyCount: number;
@@ -33,10 +34,80 @@ interface CaseContextValue {
 const CaseContext = createContext<CaseContextValue | null>(null);
 
 export function CaseProvider({ children }: { children: React.ReactNode }) {
-  const [caseKey, setCaseKey] = useState<CaseKey>(defaultCaseKey as CaseKey);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [role, setRole] = useState<Role>("nurse");
-  const [notifications, setNotifications] = useState<DoctorNotification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<DoctorNotification[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+  const [patientCase, setPatientCase] = useState<PatientCase | null>(null);
+
+  const fetchDbPatientCase = useCallback(async (intakeId: string) => {
+    try {
+      const { data } = await axios.get<PatientCase>(`${API_BASE}/intake/${intakeId}`);
+      if (data) {
+        setPatientCase(data);
+      }
+    } catch (err) {
+      console.error("[PRATHAM] Failed to fetch intake from DB:", err);
+    }
+  }, []);
+
+  const loadIntake = useCallback(async (intakeId: string) => {
+    localStorage.setItem("current_intake_id", intakeId);
+    await fetchDbPatientCase(intakeId);
+  }, [fetchDbPatientCase]);
+
+  const clearPatient = useCallback(() => {
+    setPatientCase(null);
+    localStorage.removeItem("current_intake_id");
+    localStorage.removeItem("current_patient_id");
+  }, []);
+
+  // ── Fetch notifications from the backend on mount ─────────────────────────
+  const refreshNotifications = useCallback(async () => {
+    try {
+      setIsLoadingNotifications(true);
+      // Try history endpoint (all statuses, 72h retention)
+      let data: DoctorNotification[] = [];
+      try {
+        const res = await axios.get<DoctorNotification[]>(
+          `${API_BASE}/investigations/history`
+        );
+        data = res.data || [];
+      } catch {
+        // Fallback to pending-only endpoint
+        const res = await axios.get<DoctorNotification[]>(
+          `${API_BASE}/investigations/pending`
+        );
+        data = res.data || [];
+      }
+      if (data) {
+        setNotifications((curr) => {
+          const dbIds = new Set(data.map((n) => n.intake_id));
+          // Keep local notifications that are NOT in DB (e.g. just pushed from nurse intake)
+          const localOnly = curr.filter(
+            (n) => !dbIds.has(n.intake_id) && !data.some(d => d.id === n.id)
+          );
+          return [...data, ...localOnly];
+        });
+      }
+    } catch {
+      // API unavailable — start with empty list, no mock fallback
+      console.warn("[PRATHAM] Could not fetch investigations from API.");
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshNotifications();
+  }, [refreshNotifications]);
+
+  useEffect(() => {
+    const savedId = localStorage.getItem("current_intake_id");
+    if (savedId) {
+      fetchDbPatientCase(savedId);
+    }
+  }, [fetchDbPatientCase]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -95,30 +166,36 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<CaseContextValue>(
     () => ({
-      caseKey,
-      setCaseKey,
-      patientCase: cases[caseKey],
+      patientCase,
       theme,
       toggleTheme: () => setTheme((t) => (t === "dark" ? "light" : "dark")),
       role,
       setRole,
       notifications,
+      isLoadingNotifications,
       approveNotification,
       rejectNotification,
       requestInfoNotification,
       pushNotification,
+      refreshNotifications,
+      loadIntake,
+      clearPatient,
       pendingCount,
       activeEmergencyCount,
     }),
     [
-      caseKey,
+      patientCase,
       theme,
       role,
       notifications,
+      isLoadingNotifications,
       approveNotification,
       rejectNotification,
       requestInfoNotification,
       pushNotification,
+      refreshNotifications,
+      loadIntake,
+      clearPatient,
       pendingCount,
       activeEmergencyCount,
     ],

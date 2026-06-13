@@ -20,7 +20,7 @@ const FILTERS = ["All", "Pending Approval", "Approved", "Rejected", "Needs Info"
 type Filter = (typeof FILTERS)[number];
 
 function ApprovalsPage() {
-  const { notifications } = useCase();
+  const { notifications, isLoadingNotifications, refreshNotifications } = useCase();
   const [filter, setFilter] = useState<Filter>("Pending Approval");
 
   const filtered =
@@ -34,7 +34,7 @@ function ApprovalsPage() {
         description="System-generated requests. Each request includes patient context, severity, and the recommended investigation set."
       />
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-wrap items-center gap-2">
         {FILTERS.map((f) => {
           const count = f === "All" ? notifications.length : notifications.filter((n) => n.status === f).length;
           return (
@@ -50,13 +50,33 @@ function ApprovalsPage() {
             </button>
           );
         })}
+
+        {/* Refresh button */}
+        <button
+          onClick={() => refreshNotifications()}
+          className="ml-auto rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+        >
+          ↻ Refresh
+        </button>
       </div>
 
       <div className="mt-6 space-y-3">
-        {filtered.length === 0 ? (
+        {isLoadingNotifications ? (
+          <Card>
+            <CardContent className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Loading pending approvals from database…
+            </CardContent>
+          </Card>
+        ) : filtered.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-sm text-muted-foreground">
-              Nothing here.
+              {notifications.length === 0
+                ? "No pending investigation requests in the database."
+                : "Nothing here."}
             </CardContent>
           </Card>
         ) : (

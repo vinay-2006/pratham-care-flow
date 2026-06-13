@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Ambulance, Bell, ClipboardList, Plus, Upload, Users } from "lucide-react";
 import { useCase } from "@/lib/case-store";
 import { SectionHeader } from "@/components/section-header";
-import { PatientQueueRow } from "@/components/patient-queue-row";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { patientQueue } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/_app/nurse/dashboard")({
   head: () => ({
@@ -18,14 +16,7 @@ export const Route = createFileRoute("/_app/nurse/dashboard")({
 });
 
 function NurseDashboard() {
-  const { activeEmergencyCount } = useCase();
-
-  const counts = {
-    intake: patientQueue.filter((p) => p.status === "Intake Pending").length,
-    awaiting: patientQueue.filter((p) => p.status === "Awaiting Doctor Approval").length,
-    running: patientQueue.filter((p) => p.status === "Investigation Running").length,
-    results: patientQueue.filter((p) => p.status === "Results Available").length,
-  };
+  const { activeEmergencyCount, pendingCount } = useCase();
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-8 md:px-8">
@@ -44,9 +35,9 @@ function NurseDashboard() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile icon={Ambulance} label="Active emergencies" value={activeEmergencyCount} />
-        <StatTile icon={Users} label="Intake pending" value={counts.intake} />
-        <StatTile icon={Bell} label="Awaiting approval" value={counts.awaiting} />
-        <StatTile icon={ClipboardList} label="Results in" value={counts.results} />
+        <StatTile icon={Users} label="Intake pending" value={0} />
+        <StatTile icon={Bell} label="Awaiting approval" value={pendingCount} />
+        <StatTile icon={ClipboardList} label="Results in" value={0} />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -55,16 +46,21 @@ function NurseDashboard() {
             <CardTitle className="flex items-center justify-between text-sm font-semibold">
               Active emergency queue
               <span className="text-[11px] font-normal text-muted-foreground">
-                {patientQueue.length} patients
+                0 patients
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <ul className="divide-y">
-              {patientQueue.map((p) => (
-                <PatientQueueRow key={p.id} p={p} />
-              ))}
-            </ul>
+            <div className="p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No patients in queue. Submit a new intake to begin.
+              </p>
+              <Button asChild size="sm" variant="outline" className="mt-4">
+                <Link to="/nurse/intake">
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> New intake
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

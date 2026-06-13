@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Ambulance, Send } from "lucide-react";
+import axios from "axios";
 import { useCase } from "@/lib/case-store";
 import { SectionHeader } from "@/components/section-header";
 import { SeverityBadge } from "@/components/severity-badge";
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/_app/nurse/intake")({
   component: NurseIntakePage,
 });
 
+const API_BASE = "http://localhost:8000/api";
+
 const SYMPTOMS = [
   "Chest Pain",
   "Breathlessness",
@@ -33,17 +36,39 @@ const SYMPTOMS = [
   "Neurological Symptoms",
 ];
 
+/** Map display symptom labels → API field names */
+const SYMPTOM_FIELD_MAP: Record<string, string> = {
+  "Chest Pain": "chest_pain",
+  "Breathlessness": "breathlessness",
+  "Trauma": "trauma",
+  "Bleeding": "bleeding",
+  "Unconsciousness": "unconsciousness",
+  "Neurological Symptoms": "neurological_symptoms",
+};
+
 function NurseIntakePage() {
-  const { patientCase, pushNotification } = useCase();
+  const { patientCase, pushNotification, loadIntake } = useCase();
   const navigate = useNavigate();
-  const [name, setName] = useState(patientCase.patient.name);
-  const [age, setAge] = useState(String(patientCase.patient.age));
-  const [sex, setSex] = useState<"M" | "F">(patientCase.patient.sex);
-  const [hr, setHr] = useState(String(patientCase.vitals.heartRate));
-  const [spo2, setSpo2] = useState(String(patientCase.vitals.spo2));
-  const [bp, setBp] = useState(patientCase.vitals.bloodPressure);
-  const [scenario, setScenario] = useState(patientCase.freeText);
-  const [selected, setSelected] = useState<string[]>(patientCase.symptoms);
+
+  // Controlled patient fields
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState<"M" | "F">("M");
+  // Controlled vitals
+  const [hr, setHr] = useState("");
+  const [spo2, setSpo2] = useState("");
+  const [bp, setBp] = useState("");
+  // Scenario / description
+  const [scenario, setScenario] = useState("");
+  // Symptoms
+  const [selected, setSelected] = useState<string[]>([]);
+  // Loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Refs for uncontrolled fields (respiratory rate, temperature, ETA)
+  const rrRef = useRef<HTMLInputElement>(null);
+  const tempRef = useRef<HTMLInputElement>(null);
+  const etaRef = useRef<HTMLInputElement>(null);
 
   const severity = useMemo(() => {
     const count = selected.length;
@@ -68,21 +93,96 @@ function NurseIntakePage() {
   const toggle = (s: string) =>
     setSelected((curr) => (curr.includes(s) ? curr.filter((x) => x !== s) : [...curr, s]));
 
-  const submit = () => {
-    pushNotification({
-      patientName: name,
-      age: Number(age) || 0,
-      sex,
-      severity,
-      symptoms: selected,
-      vitalsSummary: `HR ${hr} · SpO₂ ${spo2}% · BP ${bp || "—"}`,
-      recommendedInvestigations: recommended,
-      urgency: severity === "critical" ? "Critical" : severity === "high" ? "Urgent" : "Routine",
-    });
-    toast.success("Intake submitted", {
-      description: "System generated investigation request and notified on-call doctor.",
-    });
-    navigate({ to: "/nurse/dashboard" });
+  /** Parse "120/80" → { systolic: 120, diastolic: 80 } */
+  const parseBP = (raw: string) => {
+    const parts = raw.split("/");
+    return {
+      bp_systolic: parts[0] ? parseInt(parts[0], 10) || null : null,
+      bp_diastolic: parts[1] ? parseInt(parts[1], 10) || null : null,
+    };
+  };
+
+  /** Split "First Last" → { first_name, last_name } */
+  const parseName = (full: string) => {
+    const parts = full.trim().split(/\s+/);
+    const first_name = parts[0] ?? "";
+    const last_name = parts.slice(1).join(" ") || (parts[0] ?? "");
+    return { first_name, last_name };
+  };
+
+  const submit = async () => {
+    setIsSubmitting(true);
+    try {
+      const { first_name, last_name } = parseName(name);
+      const { bp_systolic, bp_diastolic } = parseBP(bp);
+
+      // Build symptoms object — all false by default, set true for selected
+      const symptomsPayload = Object.fromEntries(
+        Object.values(SYMPTOM_FIELD_MAP).map((key) => [key, false])
+      ) as Record<string, boolean>;
+      for (const label of selected) {
+        const field = SYMPTOM_FIELD_MAP[label];
+        if (field) symptomsPayload[field] = true;
+      }
+
+      const response = await axios.post(`${API_BASE}/intake`, {
+        patient: {
+          first_name,
+          last_name,
+          date_of_birth: age,
+          gender: sex === "M" ? "male" : "female",
+          contact_number: null,
+          allergies: [],
+          current_medications: [],
+          past_medical_history: [],
+        },
+        vitals: {
+          heart_rate: parseInt(hr, 10) || null,
+          spo2: parseFloat(spo2) || null,
+          bp_systolic,
+          bp_diastolic,
+          temperature: parseFloat(tempRef.current?.value ?? "") || null,
+          respiratory_rate: parseInt(rrRef.current?.value ?? "", 10) || null,
+        },
+        symptoms: symptomsPayload,
+        ambulance_eta: parseInt(etaRef.current?.value ?? "", 10) || null,
+        emergency_description: scenario || null,
+        chief_complaint: scenario ? scenario.split(".")[0] : null,
+      });
+
+      // Persist IDs for downstream pipeline steps
+      localStorage.setItem("current_intake_id", response.data.intake_id);
+      localStorage.setItem("current_patient_id", response.data.patient_id);
+      await loadIntake(response.data.intake_id);
+
+      // Also update local case store so the rest of the UI has context
+      pushNotification({
+        intake_id: response.data.intake_id,
+        patientName: name,
+        age: Number(age) || 0,
+        sex,
+        severity,
+        symptoms: selected,
+        vitalsSummary: `HR ${hr || "—"} · SpO₂ ${spo2 ? `${spo2}%` : "—"} · BP ${bp || "—"}`,
+        recommendedInvestigations: recommended,
+        urgency: severity === "critical" ? "Critical" : severity === "high" ? "Urgent" : "Routine",
+      });
+
+      toast.success("Intake submitted", {
+        description: `Patient registered (ID: ${response.data.patient_id.slice(0, 8)}…). Doctor notified.`,
+      });
+
+      navigate({ to: "/nurse/dashboard" });
+    } catch (error) {
+      console.error("Intake submission failed:", error);
+      toast.error("Submission failed", {
+        description: axios.isAxiosError(error)
+          ? error.response?.data?.detail ?? error.message
+          : "An unexpected error occurred. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -118,7 +218,7 @@ function NurseIntakePage() {
                   ))}
                 </div>
               </div>
-              <Field label="Ambulance / ETA" defaultValue={patientCase.patient.eta} />
+              <Field label="Ambulance / ETA (mins)" defaultValue="" ref={etaRef} />
             </CardContent>
           </Card>
 
@@ -128,8 +228,8 @@ function NurseIntakePage() {
               <Field label="Heart Rate (bpm)" value={hr} onChange={setHr} />
               <Field label="SpO₂ (%)" value={spo2} onChange={setSpo2} />
               <Field label="Blood Pressure" value={bp} onChange={setBp} />
-              <Field label="Respiratory Rate" defaultValue={String(patientCase.vitals.respiratoryRate)} />
-              <Field label="Temperature (°C)" defaultValue={String(patientCase.vitals.temperature)} />
+              <Field label="Respiratory Rate" defaultValue="" ref={rrRef} />
+              <Field label="Temperature (°C)" defaultValue="" ref={tempRef} />
             </CardContent>
           </Card>
 
@@ -210,9 +310,9 @@ function NurseIntakePage() {
                 </div>
               </div>
 
-              <Button className="w-full" size="lg" onClick={submit}>
+              <Button className="w-full" size="lg" onClick={submit} disabled={isSubmitting}>
                 <Send className="mr-2 h-4 w-4" />
-                Submit intake
+                {isSubmitting ? "Submitting…" : "Submit intake"}
               </Button>
 
               <p className="text-[11px] leading-relaxed text-muted-foreground">
@@ -227,25 +327,25 @@ function NurseIntakePage() {
   );
 }
 
-function Field({
-  label,
-  defaultValue,
-  value,
-  onChange,
-}: {
-  label: string;
-  defaultValue?: string;
-  value?: string;
-  onChange?: (v: string) => void;
-}) {
+import { forwardRef } from "react";
+
+const Field = forwardRef<
+  HTMLInputElement,
+  {
+    label: string;
+    defaultValue?: string;
+    value?: string;
+    onChange?: (v: string) => void;
+  }
+>(function Field({ label, defaultValue, value, onChange }, ref) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs">{label}</Label>
       {onChange ? (
-        <Input value={value} onChange={(e) => onChange(e.target.value)} />
+        <Input ref={ref} value={value} onChange={(e) => onChange(e.target.value)} />
       ) : (
-        <Input defaultValue={defaultValue} />
+        <Input ref={ref} defaultValue={defaultValue} />
       )}
     </div>
   );
-}
+});

@@ -17,7 +17,18 @@ export const Route = createFileRoute("/_app/confidence")({
 });
 
 function ConfidencePage() {
-  const { patientCase, caseKey } = useCase();
+  const { patientCase } = useCase();
+
+  if (!patientCase) {
+    return (
+      <div className="mx-auto max-w-5xl px-5 py-8 md:px-8">
+        <div className="rounded-lg border bg-muted/30 p-12 text-center">
+          <p className="text-sm text-muted-foreground">No patient selected. Submit a new intake to begin.</p>
+        </div>
+      </div>
+    );
+  }
+
   const isSuppressed = patientCase.evidenceCompleteness === "LOW";
 
   return (
@@ -104,9 +115,7 @@ function ConfidencePage() {
         </Button>
       </div>
 
-      <p className="mt-6 text-[11px] text-muted-foreground">
-        Currently viewing: <span className="font-medium">{caseKey === "primary" ? "Primary case" : "Low-evidence case"}</span>
-      </p>
+
     </div>
   );
 }

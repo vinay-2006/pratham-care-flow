@@ -1,3 +1,4 @@
+
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, Bell } from "lucide-react";
 import { useCase } from "@/lib/case-store";
@@ -20,6 +21,17 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 function DashboardPage() {
   const { patientCase } = useCase();
+
+  if (!patientCase) {
+    return (
+      <div className="mx-auto max-w-5xl px-5 py-8 md:px-8">
+        <div className="rounded-lg border bg-muted/30 p-12 text-center">
+          <p className="text-sm text-muted-foreground">No patient selected. Submit a new intake to begin.</p>
+        </div>
+      </div>
+    );
+  }
+
   const [alerts, setAlerts] = useState(patientCase.preparationAlerts);
 
   // sync alerts when case toggles
@@ -94,11 +106,11 @@ function DashboardPage() {
             <CardTitle className="text-sm font-semibold">Patient snapshot</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <Row k="Heart rate" v={`${patientCase.vitals.heartRate} bpm`} />
-            <Row k="SpO₂" v={`${patientCase.vitals.spo2}%`} />
-            <Row k="Blood pressure" v={patientCase.vitals.bloodPressure} />
-            <Row k="Respiratory rate" v={String(patientCase.vitals.respiratoryRate)} />
-            <Row k="Temperature" v={`${patientCase.vitals.temperature}°C`} />
+            <Row k="Heart rate" v={patientCase.vitals.heartRate ? `${patientCase.vitals.heartRate} bpm` : "—"} />
+            <Row k="SpO₂" v={patientCase.vitals.spo2 ? `${patientCase.vitals.spo2}%` : "—"} />
+            <Row k="Blood pressure" v={patientCase.vitals.bloodPressure || "—"} />
+            <Row k="Respiratory rate" v={patientCase.vitals.respiratoryRate ? String(patientCase.vitals.respiratoryRate) : "—"} />
+            <Row k="Temperature" v={patientCase.vitals.temperature ? `${patientCase.vitals.temperature}°C` : "—"} />
           </CardContent>
         </Card>
       </div>

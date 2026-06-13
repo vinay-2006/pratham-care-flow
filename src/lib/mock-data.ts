@@ -223,6 +223,7 @@ export const defaultCaseKey = "primary";
 // ===== Notification queue (system-generated for doctor) =====
 export interface DoctorNotification {
   id: string;
+  intake_id: string; // maps to emergency_intake.id in Supabase
   patientName: string;
   age: number;
   sex: "M" | "F";
@@ -234,11 +235,25 @@ export interface DoctorNotification {
   urgency: "Routine" | "Urgent" | "Critical";
   status: "Pending Approval" | "Approved" | "Rejected" | "Needs Info";
   caseKey?: keyof typeof cases;
+  vitals?: {
+    heartRate: number | null;
+    spo2: number | null;
+    bloodPressure: string | null;
+    respiratoryRate: number | null;
+    temperature: number | null;
+  };
+  emergencyDescription?: string;
+  audit?: {
+    reviewedBy?: string;
+    reviewedAt?: string;
+    reviewNotes?: string;
+  };
 }
 
 export const initialNotifications: DoctorNotification[] = [
   {
     id: "ntf-001",
+    intake_id: "00000000-0000-0000-0000-000000000001",
     patientName: "A. Sharma",
     age: 58,
     sex: "M",
@@ -253,6 +268,7 @@ export const initialNotifications: DoctorNotification[] = [
   },
   {
     id: "ntf-002",
+    intake_id: "00000000-0000-0000-0000-000000000002",
     patientName: "R. Verma",
     age: 34,
     sex: "M",
@@ -266,6 +282,7 @@ export const initialNotifications: DoctorNotification[] = [
   },
   {
     id: "ntf-003",
+    intake_id: "00000000-0000-0000-0000-000000000003",
     patientName: "B. Iyer",
     age: 41,
     sex: "F",
